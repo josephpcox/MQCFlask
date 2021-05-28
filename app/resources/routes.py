@@ -1,9 +1,10 @@
 from flask import Flask
+from app.authentication import auth
 from flask_restplus import Resource, Api
 from app.resources.models import Product, Security, Category, Vendor
+from app.authentication.auth import AuthError,requires_auth
 
 api = Api()
-
 
 @api.route('/product/create/<string:vendor_code>/<string:product_name>/<string:product_cost>/<int:security_id>')
 class CreateProduct(Resource):
@@ -14,6 +15,7 @@ class CreateProduct(Resource):
     }
 
     @api.doc(response)
+    @requires_auth
     def post(self, vendor_code,product_name, product_cost, security_id):
         if all([vendor_code,product_name, product_cost, security_id]) is False:
             return {'msg': self.response[400]}, 400
@@ -35,6 +37,7 @@ class GetProduct(Resource):
         403: "Database Error"
     }
     api.doc(response)
+    @requires_auth
     def get(self):
         try:
             result = Product.get_products()
@@ -49,7 +52,7 @@ class CreateSecurity(Resource):
         400: "Bad Input. Required fileds are missing or are malformed",
         403: "Database error"
     }
-
+    @requires_auth
     def post(self, category_code, security_level):
         if all([security_level,category_code]) is False:
             return {'msg':self.response[400]},400
@@ -68,6 +71,7 @@ class GetSecurities(Resource):
         400: "Bad Input. Required fileds are missing or are malformed",
         403: "Database error"
     }
+    @requires_auth
     def get(self):
         try:
             result = Security.get_securities()
@@ -84,7 +88,7 @@ class CreateCategory(Resource):
         500:"Database Error"
     }
     api.doc(response)
-
+    @requires_auth
     def post(self, category_name, category_code):
         if category_name is None:
             return {'msg':self.response[400]},400
@@ -101,7 +105,9 @@ class GetCategories(Resource):
         201: "OK",
         403: "Database Error"
     }
+    
     api.doc(response)
+    @requires_auth
     def get(self):
         try:
             result = Category.get_categories()
@@ -118,7 +124,7 @@ class CreateVendor(Resource):
         500: "Database Error"
     }
     api.doc(response)
-
+    @requires_auth
     def post(self, vendor_name, vendor_code):
         if all([vendor_name, vendor_code]) is False:
             return {'msg': self.response[400]}, 400
@@ -139,7 +145,7 @@ class GetVendors(Resource):
         403: "Database Error"
     }
     api.doc(response)
-
+    @requires_auth
     def get(self):
         try:
             result = Vendor.get_vendors()
